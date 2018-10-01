@@ -60,12 +60,20 @@ void q2()
     seg_desc_t code = set_seg(0x0, 0xFFFFF, SEG_DESC_CODE_XR);
     seg_desc_t data = set_seg(0x0, 0xFFFFF, SEG_DESC_DATA_RW);
 
-    // TO FINISH
-    gdt_reg_t * gdt;
-    seg_desc_t * p = gdt -> desc;
-    *p = null;
-    *(p + 1) = code;
-    *(p + 2) = data;
+    seg_desc_t p[3];
+    p[0] = null;
+    p[1] = code;
+    p[2] = data;
+
+    gdt_reg_t gdt;
+    gdt.limit = 3 * sizeof(seg_desc_t);
+    gdt.desc = p;
+
+    set_gdtr(gdt);
+
+    for (unsigned int i = 0; i < ((gdt.limit + 1) / sizeof(seg_desc_t)); i++) {
+        printSegment(gdt.desc + i, i);
+    }
 }
 
 void tp()
