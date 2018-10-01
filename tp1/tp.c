@@ -36,14 +36,14 @@ void q1()
     }
 }
 
-seg_desc_t set_seg(uint64_t base, uint64_t limit, uint64_t type)
+seg_desc_t set_seg(uint64_t base, uint64_t limit, uint64_t type, uint64_t descriptorType)
 {
     seg_desc_t segment;
     segment.limit_1 = limit & 0xFFFF;
     segment.base_1 = base & 0xFFFF;
     segment.base_2 = base >> 16 && 0xFF;
     segment.type = type;
-    segment.s = 0;
+    segment.s = descriptorType;
     segment.dpl = 0x0;
     segment.p = 0;
     segment.limit_2 = limit >> 16 & 0xF;
@@ -56,9 +56,9 @@ seg_desc_t set_seg(uint64_t base, uint64_t limit, uint64_t type)
 }
 void q2()
 {
-    seg_desc_t null = set_seg(0x0, 0x0, 0x0);
-    seg_desc_t code = set_seg(0x0, 0xFFFFF, SEG_DESC_CODE_XR);
-    seg_desc_t data = set_seg(0x0, 0xFFFFF, SEG_DESC_DATA_RW);
+    seg_desc_t null = set_seg(0x0, 0x0, 0x0, 0);
+    seg_desc_t code = set_seg(0x0, 0xFFFFF, SEG_DESC_CODE_XR, 1);
+    seg_desc_t data = set_seg(0x0, 0xFFFFF, SEG_DESC_DATA_RW, 1);
 
     seg_desc_t p[3];
     p[0] = null;
@@ -71,6 +71,14 @@ void q2()
 
     set_gdtr(gdt);
 
+    // TO FIX
+    //set_ss();
+    //set_cs();
+    //set_ds();
+    //set_es();
+    //set_fs();
+    //set_gs();
+    
     for (unsigned int i = 0; i < ((gdt.limit + 1) / sizeof(seg_desc_t)); i++) {
         printSegment(gdt.desc + i, i);
     }
