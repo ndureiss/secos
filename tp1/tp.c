@@ -37,7 +37,7 @@ void q1()
     }
 }
 
-seg_desc_t set_seg(uint64_t base, uint64_t limit, uint64_t type, uint64_t descriptorType)
+seg_desc_t set_desc(uint64_t base, uint64_t limit, uint64_t type, uint64_t descriptorType, uint64_t dispo, uint64_t length, uint64_t granularity)
 {
     seg_desc_t segment;
     segment.limit_1 = limit & 0xFFFF;
@@ -46,48 +46,49 @@ seg_desc_t set_seg(uint64_t base, uint64_t limit, uint64_t type, uint64_t descri
     segment.type = type;
     segment.s = descriptorType;
     segment.dpl = 0x0;
-    segment.p = 0;
+    segment.p = dispo;
     segment.limit_2 = limit >> 16 & 0xF;
     segment.avl = 0;
     segment.l = 0;
-    segment.d = 0;
-    segment.g = 0;
+    segment.d = length;
+    segment.g = granularity;
     segment.base_3 = base >> 24 & 0xFF;
     return segment;
 }
 
-seg_desc_t gdt[3];
+seg_desc_t gdt[4];
 
 void tp()
 {
-    gdt[0] = set_seg(0x0, 0x0, 0x0, 0);;
-    gdt[1] = set_seg(0x0, 0xFFFFF, SEG_DESC_CODE_XR, 1);;
-    gdt[2] = set_seg(0x0, 0xFFFFF, SEG_DESC_DATA_RW, 1);;
+    gdt[0] = set_desc(0x0, 0x0, 0x0, 0, 0, 0, 0);
+    gdt[1] = set_desc(0x0, 0xFFFFF, SEG_DESC_CODE_XR, 1, 1, 1, 1);
+    gdt[2] = set_desc(0x0, 0xFFFFF, SEG_DESC_DATA_RW, 1, 1, 1, 1);
+    gdt[3] = set_desc(0x600000, 0x20 - 1, SEG_DESC_DATA_RW, 1, 1, 1, 0);
 
     gdt_reg_t gdtr;
-    gdtr.limit = 3 * sizeof(seg_desc_t) - 1;
+    gdtr.limit = 4 * sizeof(seg_desc_t) - 1;
     gdtr.desc = gdt;
 
     set_gdtr(gdtr);
 
-    // TO FIX
-
     set_cs(0x8);
+
+    set_ss(0x10);
     set_ds(0x10);
-    //set_es(0x20);
+    set_es(0x10);
+    set_fs(0x10);
+    set_gs(0x10);
+
 
     for (unsigned int i = 0; i < ((gdtr.limit + 1) / sizeof(seg_desc_t)); i++) {
         printSegment(gdtr.desc + i, i);
     }
-
-    // Q3
-    /*seg_desc_t data2 = set_seg(0x600000, 0x200000, SEG_DESC_DATA_RW, 1);
-    gdtr.desc[3] = data2;
 
     char  src[64];
     char *dst = 0;
 
     memset(src, 0xff, 64);
 
-    _memcpy8(dst, src, 32);*/
+    set_es(0x18);
+    _memcpy8(dst, src, 33);
 }
