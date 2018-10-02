@@ -89,6 +89,14 @@ void q2()
     for (unsigned int i = 0; i < ((gdt.limit + 1) / sizeof(seg_desc_t)); i++) {
         printSegment(gdt.desc + i, i);
     }
+
+    // Q3
+    char  src[64];
+    char *dst = 0;
+
+    memset(src, 0xff, 64);
+
+    //seg_desc_t data = set_seg(0x600000, , SEG_DESC_DATA_RW, 1);
 }
 
 void tp()
