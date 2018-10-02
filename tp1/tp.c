@@ -72,25 +72,20 @@ void q2()
     set_gdtr(gdt);
 
     // TO FIX
-    /*seg_sel_t ss_sel;
-    ss_sel.rpl = 0;
-    ss_sel.ti = 0;
-    ss_sel.index = 3;
-    seg_sel_t cs_sel;
+    /*seg_sel_t cs_sel;
     cs_sel.rpl = 0;
     cs_sel.ti = SEG_SEL_GDT;
-    cs_sel.index = 1;
+    cs_sel.index = 1;*/
     seg_sel_t ds_sel;
     ds_sel.rpl = 0;
     ds_sel.ti = SEG_SEL_GDT;
-    ds_sel.index = 2;*/
-    //set_ss();
-    //set_cs(cs_sel);
-    //set_ds(ds_sel);
-    //set_es();
-    //set_fs();
-    //set_gs();
+    ds_sel.index = 2;
+
+    set_cs(0x8);
+    set_ds(ds_sel);
     
+    // Loop ?
+
     for (unsigned int i = 0; i < ((gdt.limit + 1) / sizeof(seg_desc_t)); i++) {
         printSegment(gdt.desc + i, i);
     }
