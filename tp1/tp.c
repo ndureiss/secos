@@ -2,6 +2,7 @@
 #include <debug.h>
 #include <info.h>
 #include <segmem.h>
+#include <string.h>
 
 extern info_t *info;
 
@@ -28,11 +29,11 @@ void printSegment(seg_desc_t * segment, int numberOfSegment)
 
 void q1()
 {
-    gdt_reg_t gdt;
-    get_gdtr(gdt);
+    gdt_reg_t gdtr;
+    get_gdtr(gdtr);
 
-    for (unsigned int i = 0; i < ((gdt.limit + 1) / sizeof(seg_desc_t)); i++) {
-        printSegment(gdt.desc + i, i);
+    for (unsigned int i = 0; i < ((gdtr.limit + 1) / sizeof(seg_desc_t)); i++) {
+        printSegment(gdtr.desc + i, i);
     }
 }
 
@@ -54,52 +55,39 @@ seg_desc_t set_seg(uint64_t base, uint64_t limit, uint64_t type, uint64_t descri
     segment.base_3 = base >> 24 & 0xFF;
     return segment;
 }
-void q2()
+
+seg_desc_t gdt[3];
+
+void tp()
 {
-    seg_desc_t null = set_seg(0x0, 0x0, 0x0, 0);
-    seg_desc_t code = set_seg(0x0, 0xFFFFF, SEG_DESC_CODE_XR, 1);
-    seg_desc_t data = set_seg(0x0, 0xFFFFF, SEG_DESC_DATA_RW, 1);
+    gdt[0] = set_seg(0x0, 0x0, 0x0, 0);;
+    gdt[1] = set_seg(0x0, 0xFFFFF, SEG_DESC_CODE_XR, 1);;
+    gdt[2] = set_seg(0x0, 0xFFFFF, SEG_DESC_DATA_RW, 1);;
 
-    seg_desc_t p[3];
-    p[0] = null;
-    p[1] = code;
-    p[2] = data;
+    gdt_reg_t gdtr;
+    gdtr.limit = 3 * sizeof(seg_desc_t) - 1;
+    gdtr.desc = gdt;
 
-    gdt_reg_t gdt;
-    gdt.limit = 3 * sizeof(seg_desc_t);
-    gdt.desc = p;
-
-    set_gdtr(gdt);
+    set_gdtr(gdtr);
 
     // TO FIX
-    /*seg_sel_t cs_sel;
-    cs_sel.rpl = 0;
-    cs_sel.ti = SEG_SEL_GDT;
-    cs_sel.index = 1;*/
-    seg_sel_t ds_sel;
-    ds_sel.rpl = 0;
-    ds_sel.ti = SEG_SEL_GDT;
-    ds_sel.index = 2;
 
     set_cs(0x8);
-    set_ds(ds_sel);
-    
-    // Loop ?
+    set_ds(0x10);
+    //set_es(0x20);
 
-    for (unsigned int i = 0; i < ((gdt.limit + 1) / sizeof(seg_desc_t)); i++) {
-        printSegment(gdt.desc + i, i);
+    for (unsigned int i = 0; i < ((gdtr.limit + 1) / sizeof(seg_desc_t)); i++) {
+        printSegment(gdtr.desc + i, i);
     }
 
     // Q3
+    /*seg_desc_t data2 = set_seg(0x600000, 0x200000, SEG_DESC_DATA_RW, 1);
+    gdtr.desc[3] = data2;
+
     char  src[64];
     char *dst = 0;
 
     memset(src, 0xff, 64);
 
-    //seg_desc_t data = set_seg(0x600000, , SEG_DESC_DATA_RW, 1);
-}
-
-void tp()
-{
-    q2();    
+    _memcpy8(dst, src, 32);*/
 }
