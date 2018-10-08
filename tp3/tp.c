@@ -11,20 +11,20 @@ void printSegment(seg_desc_t * segment, int numberOfSegment)
     uint64_t computed_limit = ((segment -> limit_2 & 0xF) << 16) | (segment -> limit_1 & 0xFFFF);
     uint64_t computed_base = ((segment -> base_3 & 0xFF) << 24) | ((segment -> base_2 & 0xFF) << 16) | ((segment -> base_1 & 0xFFFF));
     
-    printf("\n");
-    printf("Segment %d :\n", numberOfSegment);
-    printf("------------\n");
-    printf("Limit : 0x%llx\n", computed_limit & 0xFFFFF);
-    printf("Base : 0x%llx\n", computed_base & 0xFFFFFFFF);
-    printf("Type : %ld\n", segment -> type & 0xF);
-    printf("Descriptor type : %ld\n", segment -> s & 0x1);
-    printf("Descriptor privilege level: %ld\n", segment -> dpl & 0x3);
-    printf("Segment present flag : %ld\n", segment -> p & 0x1);
-    printf("Available for fun and profit : %ld\n", segment -> avl & 0x1);
-    printf("Longmode: %ld\n", segment -> l & 0x1);
-    printf("Default length: %ld\n", segment -> d & 0x1);
-    printf("Granularity: %ld\n", segment -> g & 0x1);
-    printf("\n");
+    debug("\n");
+    debug("Segment %d :\n", numberOfSegment);
+    debug("------------\n");
+    debug("Limit : 0x%llx\n", computed_limit & 0xFFFFF);
+    debug("Base : 0x%llx\n", computed_base & 0xFFFFFFFF);
+    debug("Type : %ld\n", segment -> type & 0xF);
+    debug("Descriptor type : %ld\n", segment -> s & 0x1);
+    debug("Descriptor privilege level: %ld\n", segment -> dpl & 0x3);
+    debug("Segment present flag : %ld\n", segment -> p & 0x1);
+    debug("Available for fun and profit : %ld\n", segment -> avl & 0x1);
+    debug("Longmode: %ld\n", segment -> l & 0x1);
+    debug("Default length: %ld\n", segment -> d & 0x1);
+    debug("Granularity: %ld\n", segment -> g & 0x1);
+    debug("\n");
 }
 
 seg_desc_t set_desc(uint64_t base, uint64_t limit, uint64_t type, uint64_t descriptorType, uint64_t privilegeLevel, uint64_t dispo, uint64_t length, uint64_t granularity)
