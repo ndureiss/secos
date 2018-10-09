@@ -35,7 +35,6 @@ void bp_handler()
   asm volatile ("pop %ebp");
   asm volatile ("pusha");
   debug("Breakpoint interruption has been handled.\n");
-  debug("Test\n");
   asm volatile ("popa");
   asm volatile ("add $8, %esp");
   asm volatile ("iret");
