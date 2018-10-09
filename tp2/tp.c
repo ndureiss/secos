@@ -26,23 +26,28 @@ void printInterruptDescriptor(int_desc_t * interrupt, int numberOfInterrupt)
 void printIDT(idt_reg_t idtr)
 {
   debug("\n");
-  debug("IDT adress : %p\n", (void *) idtr.addr);
+  debug("IDT address : %p\n", (void *) idtr.addr);
   debug("\n");
 }
 
 void bp_handler()
 {
-  asm volatile ("pop %ebp");
   asm volatile ("pusha");
-  debug("Breakpoint interruption has been handled.\n");
+  debug("Breakpoint interruption handling.\n");
   asm volatile ("popa");
-  asm volatile ("add $8, %esp");
+  asm volatile ("leave");
   asm volatile ("iret");
 }
 
 void bp_trigger()
 {
+  uint32_t eip;
+  //initialize eip
+  // asm volatile ("move %0, %1 :: ........... ");
+  debug("EIP address : %p\n", (void *) eip);
+  debug("Breakpoint interruption will be raised.\n");
   asm volatile ("INT3");
+  debug("Breakpoint interruption has been raised.\n");
 }
 
 void tp()
@@ -54,4 +59,5 @@ void tp()
   idtr.desc[3].offset_2 = ((uint32_t) &bp_handler >> 16) & 0xFFFF;
   
   bp_trigger();
+  debug("Breakpoint interruption has been succesfully handled.\n");
 }
