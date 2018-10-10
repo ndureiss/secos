@@ -48,10 +48,15 @@ seg_desc_t set_desc(uint64_t base, uint64_t limit, uint64_t type, uint64_t descr
 
 void userland()
 {
-   asm volatile ("mov %eax, %cr0");
+   asm volatile ("mov %eax, %cr0"); // Génère un General Protection Fault
 }
 
 seg_desc_t gdt[5];
+
+tss_t TSS;
+
+// Pour avoir les selecteurs utiliser 
+//  gdt_krn/usr_seg_sel
 
 fptr32_t ptr;
 
@@ -69,20 +74,31 @@ void tp()
   
   set_gdtr(gdtr);
   
-  set_cs(0x8);
+  set_cs(0x8); //utiliser ici les selecteurs
   set_ss(0x10);
   set_ds(0x20);
   set_es(0x20);
   set_fs(0x20);
   set_gs(0x20);
 
-
-  // 3.1 - Pas de soucis
-  // 3.2 - Exception: General protection
-
   // 3.3
+  //ptr.offset = (uint32_t) &userland;
   //ptr.segment = 0x18;
   //farjump(ptr);
+
+  //3.4
+  //TSS.s0.esp = get_ebp();
+  //TSS.s0.ss = selecteur de data ring 0;
+  //init tss tss_sdsc(&GDT[ts_idx], (offset_t) &TSS)
+  //set_tr(selecteur de ts);
+
+  asm volatile ("push %0 :: i"(selecteur de ss)); //ss
+  asm volatile ("push %%ebp"); //esp
+  asm volatile ("pushf"); //eflags
+  asm volatile ("push %0 :: i"(selecteur de cs)); //cs
+  asm volatile ("push %0" :: "r"(&userland)); //eip
+  asm volatile ("iret"); //
+  asm volatile (""); //
   
   for (unsigned int i = 0; i < ((gdtr.limit + 1) / sizeof(seg_desc_t)); i++) {
     printSegment(gdtr.desc + i, i);
