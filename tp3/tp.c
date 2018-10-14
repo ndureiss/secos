@@ -4,6 +4,12 @@
 #include <segmem.h>
 #include <types.h>
 
+#define c0_sel gdt_krn_seg_sel(1)
+#define d0_sel gdt_krn_seg_sel(2)
+#define c3_sel gdt_usr_seg_sel(3)
+#define d3_sel gdt_usr_seg_sel(4)
+#define ts_sel gdt_krn_seg_sel(5)
+
 extern info_t *info;
 
 void printSegment(seg_desc_t * segment, int numberOfSegment)
@@ -55,9 +61,6 @@ seg_desc_t gdt[5];
 
 tss_t TSS;
 
-// Pour avoir les selecteurs utiliser 
-//  gdt_krn/usr_seg_sel
-
 fptr32_t ptr;
 
 void tp()
@@ -69,21 +72,21 @@ void tp()
   gdt[4] = set_desc(0x0, 0xFFFFF, SEG_DESC_DATA_RW, 1, 0x3, 1, 1, 1);  // Data ring 3
   
   gdt_reg_t gdtr;
-  gdtr.limit = 5 * sizeof(seg_desc_t) - 1;
+  gdtr.limit = sizeof(gdt) - 1;
   gdtr.desc = gdt;
   
   set_gdtr(gdtr);
   
-  set_cs(0x8); //utiliser ici les selecteurs
-  set_ss(0x10);
-  set_ds(0x20);
-  set_es(0x20);
-  set_fs(0x20);
-  set_gs(0x20);
+  set_cs(c0_sel); //utiliser ici les selecteurs
+  set_ss(d0_sel);
+  set_ds(d3_sel);
+  set_es(d3_sel);
+  set_fs(d3_sel);
+  set_gs(d3_sel);
 
   // 3.3
   //ptr.offset = (uint32_t) &userland;
-  //ptr.segment = 0x18;
+  //ptr.segment = c3_sel;
   //farjump(ptr);
 
   //3.4
@@ -91,7 +94,7 @@ void tp()
   //TSS.s0.ss = selecteur de data ring 0;
   //init tss tss_sdsc(&GDT[ts_idx], (offset_t) &TSS)
   //set_tr(selecteur de ts);
-
+/*
   asm volatile ("push %0 :: i"(selecteur de ss)); //ss
   asm volatile ("push %%ebp"); //esp
   asm volatile ("pushf"); //eflags
@@ -99,7 +102,7 @@ void tp()
   asm volatile ("push %0" :: "r"(&userland)); //eip
   asm volatile ("iret"); //
   asm volatile (""); //
-  
+  */
   for (unsigned int i = 0; i < ((gdtr.limit + 1) / sizeof(seg_desc_t)); i++) {
     printSegment(gdtr.desc + i, i);
   }
