@@ -34,6 +34,11 @@ void bp_handler()
 {
   asm volatile ("pusha");
   debug("Breakpoint interruption handling.\n");
+
+  uint32_t eip;
+  asm volatile ("mov 4(%%ebp), %0" : "=r"(eip));
+  debug("EIP address : %p\n", (void *) eip);
+
   asm volatile ("popa");
   asm volatile ("leave");
   asm volatile ("iret");
@@ -41,10 +46,6 @@ void bp_handler()
 
 void bp_trigger()
 {
-  uint32_t eip;
-  //initialize eip
-  // asm volatile ("move %0, %1 :: ........... ");
-  debug("EIP address : %p\n", (void *) eip);
   debug("Breakpoint interruption will be raised.\n");
   asm volatile ("INT3");
   debug("Breakpoint interruption has been raised.\n");
