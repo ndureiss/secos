@@ -52,12 +52,25 @@ seg_desc_t set_desc(uint64_t base, uint64_t limit, uint64_t type, uint64_t descr
     return segment;
 }
 
-void userland()
+seg_desc_t tss_desc(offset_t tss_addr)
 {
-   asm volatile ("mov %eax, %cr0"); // Génère un General Protection Fault
+  seg_desc_t segment;
+  raw32_t addr = {.raw = tss_addr};
+  segment.raw = sizeof(tss_t);
+  segment.base_1 = addr.wlow;
+  segment.base_2 = addr._whigh.blow;
+  segment.base_3 = addr._whigh.bhigh;
+  segment.type = SEG_DESC_SYS_TSS_AVL_32;
+  segment.p = 1;
+  return segment;
 }
 
-seg_desc_t gdt[5];
+void userland()
+{
+   //asm volatile ("mov %eax, %cr0"); // Génère un General Protection Fault
+}
+
+seg_desc_t gdt[6];
 
 tss_t TSS;
 
@@ -90,19 +103,19 @@ void tp()
   //farjump(ptr);
 
   //3.4
-  //TSS.s0.esp = get_ebp();
-  //TSS.s0.ss = selecteur de data ring 0;
-  //init tss tss_sdsc(&GDT[ts_idx], (offset_t) &TSS)
-  //set_tr(selecteur de ts);
-/*
-  asm volatile ("push %0 :: i"(selecteur de ss)); //ss
-  asm volatile ("push %%ebp"); //esp
+  TSS.s0.esp = get_ebp();
+  TSS.s0.ss = d0_sel;
+  gdt[5] = tss_desc((offset_t) &TSS);
+
+  set_tr(ts_sel);
+
+  asm volatile ("push %0" :: "i"(d3_sel)); //ss
+  asm volatile ("push %ebp"); //esp
   asm volatile ("pushf"); //eflags
-  asm volatile ("push %0 :: i"(selecteur de cs)); //cs
+  asm volatile ("push %0" :: "i"(c3_sel)); //cs
   asm volatile ("push %0" :: "r"(&userland)); //eip
   asm volatile ("iret"); //
-  asm volatile (""); //
-  */
+  
   for (unsigned int i = 0; i < ((gdtr.limit + 1) / sizeof(seg_desc_t)); i++) {
     printSegment(gdtr.desc + i, i);
   }
